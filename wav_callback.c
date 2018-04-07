@@ -7,6 +7,13 @@
 typedef struct {
     Uint32 audio_len;
     Uint8 *audio_pos;
+
+    // Total length of the wav sample
+    Uint32 wav_length;
+
+    // @Question: should this be initialized??
+    Uint8 *wav_buffer; // Buffer containing our audio file
+
 } Audio_Data;
 
 void audio_callback(void *userdata, Uint8 *stream, int len);
@@ -20,43 +27,40 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    // @Question: can I get rid of these and just use the struct data???
-    // local variables
-    Uint32 wav_length; // length of our sample
-    Uint8 *wav_buffer = 0; // buffer containing our audio file
-    SDL_AudioSpec wav_spec; // the specs of our piece of music
-
-    /* Load the WAV */
-    // the specs, length and buffer of our wav are filled
-    if (SDL_LoadWAV(WAV_PATH, &wav_spec, &wav_buffer, &wav_length) == NULL)
-        return 1;
-
-    // set the callback function
-    wav_spec.callback = audio_callback;
-
+    SDL_AudioSpec wav_spec;
     Audio_Data audio_data;
-    audio_data.audio_pos = wav_buffer;
-    audio_data.audio_len = wav_length;
 
+    // Load the WAV, the specs, length and buffer of our wav are filled by this function
+    if (SDL_LoadWAV(WAV_PATH, &wav_spec, &audio_data.wav_buffer, &audio_data.wav_length) == NULL) {
+        printf("SDL LoadWAV error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    audio_data.audio_pos = audio_data.wav_buffer; // Start the audio pos at the beginning of our sample
+    audio_data.audio_len = audio_data.wav_length; // Start the audio len the same len as the sample
+
+    // Set the callback function and point the wav_spec to our audio data struct
+    wav_spec.callback = audio_callback;
     wav_spec.userdata = &audio_data;
 
-    /* Open the audio device */
-    if (SDL_OpenAudio(&wav_spec, NULL) < 0){
+    // Open the audio device
+    if (SDL_OpenAudio(&wav_spec, NULL) < 0) { // @Update: according to SDL docs this is legacy and SDL_OpenAudioDevice should be used
         printf("Couldn't open audio: %s\n", SDL_GetError());
         return 1;
     }
 
-    /* Start playing */
+    // Start playing
     SDL_PauseAudio(0);
 
-    // wait until we're done playing
+    // Wait until we're done playing
     while (audio_data.audio_len > 0) {
         SDL_Delay(100);
     }
 
-    // shut everything down
+    // Shut everything down
     SDL_CloseAudio();
-    SDL_FreeWAV(wav_buffer);
+    SDL_FreeWAV(audio_data.wav_buffer);
+
 }
 
 void audio_callback(void *userdata, Uint8 *stream, int len) {
