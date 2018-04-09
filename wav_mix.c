@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 
@@ -24,7 +23,7 @@ int main(int argc, char* argv[]){
 
     // Load the wav
     Mix_Music *audio = Mix_LoadMUS(WAV_PATH);
-    if(!audio) {
+    if (!audio) {
         printf("SDL mix error: %s\n", Mix_GetError());
         return 1;
     }
