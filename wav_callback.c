@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
 
 #define WAV_PATH "PATH/TO/AUDIO.wav"
+
+// Play a wav file using SDL's callback function
 
 typedef struct {
     // Length of the audio that has been output and pointer to the audio that
@@ -26,11 +27,12 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    SDL_AudioSpec wav_spec;
+    SDL_AudioSpec loaded_wav_spec;
+    SDL_AudioSpec obtained_wav_spec; // SDL may change the wav spec depending on the hardware, this spec will contain that data
     Audio_Data audio_data;
 
-    // Load the WAV, the specs, length, and buffer of our wav are filled by this function
-    if (SDL_LoadWAV(WAV_PATH, &wav_spec, &audio_data.wav_buffer, &audio_data.wav_length) == NULL) {
+    // Load the wav file. The specs, length, and buffer of our wav are filled by this function
+    if (SDL_LoadWAV(WAV_PATH, &loaded_wav_spec, &audio_data.wav_buffer, &audio_data.wav_length) == NULL) {
         printf("SDL LoadWAV error: %s\n", SDL_GetError());
         return 1;
     }
@@ -41,17 +43,21 @@ int main(int argc, char* argv[]){
     audio_data.audio_len = 0;
 
     // Set the callback function and point the wav_spec to our audio data struct
-    wav_spec.callback = audio_callback;
-    wav_spec.userdata = &audio_data;
+    loaded_wav_spec.callback = audio_callback;
+    loaded_wav_spec.userdata = &audio_data;
 
     // Open the audio device
-    if (SDL_OpenAudio(&wav_spec, NULL) < 0) { // @Update: according to SDL docs this is legacy and SDL_OpenAudioDevice should be used
-        printf("Couldn't open audio: %s\n", SDL_GetError());
+    int iscapture = 0; // We are not opening the device for recording so iscapture = 0
+    int allowed_changes = 0; // See docs for info on what this is for
+    const char* device_name = SDL_GetAudioDeviceName(0, iscapture); // Gets the zero'th non-capture device name (see docs for more info)
+    SDL_AudioDeviceID device = SDL_OpenAudioDevice(device_name, iscapture, &loaded_wav_spec, &obtained_wav_spec, allowed_changes);
+    if (device == 0) {
+        printf("SDL_OpenAudioDevice error: %s\n", SDL_GetError());
         return 1;
     }
 
     // Start playing
-    SDL_PauseAudio(0);
+    SDL_PauseAudioDevice(device, 0);
 
     // Wait until we're done playing
     while (audio_data.audio_len < audio_data.wav_length) {
@@ -59,13 +65,14 @@ int main(int argc, char* argv[]){
     }
 
     // Shut everything down
-    SDL_CloseAudio();
+    SDL_CloseAudioDevice(device);
     SDL_FreeWAV(audio_data.wav_buffer);
+    SDL_Quit();
 
 }
 
 // This is our custom Audio callback function, SDL will call this function when
-// it is ready for more data (audio) to be output
+// it is ready for more data (audio) to be output from the audio device
 void audio_callback(void *userdata, Uint8 *stream, int len) {
 
     // Cast the userdata to Audio_Data so we can use it
