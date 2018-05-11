@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
-// Play a triangle wav using SDL's callback function
+// Play a sawtooth wav using SDL's callback function
 
 #define SECONDS 6
 #define CHANNELS 2
@@ -16,7 +16,7 @@ typedef struct {
 void audio_callback(void *userdata, Uint8 *stream, int len);
 
 int main(int argc, char* argv[]){
-    printf("Playing a triangle wave.\n");
+    printf("Playing a sawtooth wave.\n");
 
     int samples_per_second = 44100; // CD quality audio
     int bytes_per_sample = sizeof(Uint16) * CHANNELS;
@@ -33,20 +33,19 @@ int main(int argc, char* argv[]){
 
     int tone_hz = 440;
     Uint16 tone_volume = 5000;
-    int triange_wave_period = samples_per_second / tone_hz;
-    int half_triange_wave_period = triange_wave_period / 2;
+    int sawtooth_wave_period = samples_per_second / tone_hz;
+    int half_sawtooth_wave_period = sawtooth_wave_period / 2;
     int sample_count = bytes_to_write/bytes_per_sample;
 
-    // Tone volume is doubled here because we need to go from -tone_volume to tone_volume in a half period
-    int volume_steps_per_sample = 2 * tone_volume / half_triange_wave_period;
+    // Tone volume is doubled here because we need to go from -tone_volume to tone_volume in one period
+    int volume_steps_per_sample = 2 * tone_volume / sawtooth_wave_period;
     Sint16 sample_value = -tone_volume;
-    int sign = 1;
+
     for (int sample_index = 0; sample_index < sample_count; sample_index++) {
 
-        // Create the triangle wav
-        if (sample_value <= -tone_volume) sign = 1;
-        if (sample_value >= tone_volume) sign = -1;
-        sample_value += sign * volume_steps_per_sample;
+        // Create the sawtooth wav
+        if (sample_value >= tone_volume) sample_value = -tone_volume;
+        sample_value += volume_steps_per_sample;
 
         // Write the sample_value to the buffer for each channel
         for (int channel = 0; channel < CHANNELS; channel++) {
@@ -67,7 +66,7 @@ int main(int argc, char* argv[]){
     audio_data.buffer = sample_start;
     audio_data.play_cursor = 0;
     audio_data.size = bytes_to_write;
-    audio_data.bytes_per_period = triange_wave_period * bytes_per_sample;
+    audio_data.bytes_per_period = sawtooth_wave_period * bytes_per_sample;
 
     wanted_spec.freq = samples_per_second;
     wanted_spec.format = AUDIO_S16;
