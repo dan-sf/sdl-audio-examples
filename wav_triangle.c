@@ -33,12 +33,12 @@ int main(int argc, char* argv[]){
 
     int tone_hz = 440;
     Uint16 tone_volume = 5000;
-    int triange_wave_period = samples_per_second / tone_hz;
-    int half_triange_wave_period = triange_wave_period / 2;
+    int triangle_wave_period = samples_per_second / tone_hz;
+    int half_triangle_wave_period = triangle_wave_period / 2;
     int sample_count = bytes_to_write/bytes_per_sample;
 
     // Tone volume is doubled here because we need to go from -tone_volume to tone_volume in a half period
-    int volume_steps_per_sample = 2 * tone_volume / half_triange_wave_period;
+    int volume_steps_per_sample = 2 * tone_volume / half_triangle_wave_period;
     Sint16 sample_value = -tone_volume;
     int sign = 1;
     for (int sample_index = 0; sample_index < sample_count; sample_index++) {
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]){
     audio_data.buffer = sample_start;
     audio_data.play_cursor = 0;
     audio_data.size = bytes_to_write;
-    audio_data.bytes_per_period = triange_wave_period * bytes_per_sample;
+    audio_data.bytes_per_period = triangle_wave_period * bytes_per_sample;
 
     wanted_spec.freq = samples_per_second;
     wanted_spec.format = AUDIO_S16;
