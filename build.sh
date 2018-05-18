@@ -11,6 +11,7 @@ then
     clang -L/usr/local/lib -lSDL2 -o wav_triangle.out wav_triangle.c
     clang -L/usr/local/lib -lSDL2 -o wav_sawtooth.out wav_sawtooth.c
     clang -L/usr/local/lib -lSDL2 -o wav_sine.out wav_sine.c
+    clang -L/usr/local/lib -lSDL2 -o wav_octave.out wav_octave.c
 elif [[ $args == 1 ]];then
     fname=$1
     if [[ $fname != *"mix"* ]]
