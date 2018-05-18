@@ -10,7 +10,8 @@ explanation where needed.
 
 Download SDL2 if needed. This code uses functionality introduced in version
 2.0.4 so make sure to get the latest version. I use [homebrew](https://brew.sh/)
-but any package manager/direct install should work.
+but any package manager/direct install should work. The SDL Mixer is only
+needed if you want to build the mixer example in `wav_mix.c`.
 
 ```
 brew install sdl2 sdl2_mixer
