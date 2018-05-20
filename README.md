@@ -1,8 +1,8 @@
 # SDL Audio Examples
 
 This is a repository of basic examples on how to use
-[SDL](https://wiki.libsdl.org/)'s audio functionality.  I plan to create basic
-examples for future reference or as a starting point for anyone interested in
+[SDL](https://wiki.libsdl.org/)'s audio functionality. These SDL audio examples
+are for future reference or as a starting point for anyone interested in
 working with SDL and audio. I have also over commented the code for extra
 explanation where needed.
 
